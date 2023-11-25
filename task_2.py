@@ -33,12 +33,10 @@ class Record:
         self.phones = [p for p in self.phones if str(p) != phone]
 
     def edit_phone(self, old_phone, new_phone):
-        for p in range(len(self.phones)):
-            if str(self.phones[p]) == old_phone:
-                self.phones[p] = Phone(new_phone)
+        self.phones = [Phone(new_phone) if str(p) == old_phone else p for p in self.phones]
 
     def find_phone(self, phone):
-        return phone if phone in [str(p) for p in self.phones] else f" Phone number {phone} not found"
+        return phone if phone in [str(p) for p in self.phones] else f"Phone number {phone} not found"
 
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
