@@ -1,38 +1,74 @@
-from collections import defaultdict
-from datetime import datetime
+def parse_input(user_input):
+    cmd, *args = user_input.split()
+    cmd = cmd.strip().lower()
+    return cmd, *args
 
 
-def get_birthday_per_week(users):
-    default_dict = defaultdict(list)
-    today = datetime.today().date()
+def input_error(func):
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ValueError:
+            return "Give me name and phone please"
+        except KeyError:
+            return "Invalid key"
+        except IndexError:
+            return "Invalid index"
 
-    for user in users:
-        name = user["name"]
-        birthday = user["birthday"].date()
-        birthday_this_year = birthday.replace(year=today.year)
+    return inner
 
-        if birthday_this_year < today:
-            birthday_this_year.replace(year=today.year + 1)
 
-        delta_days = (birthday_this_year - today).days
-        if 0 <= delta_days < 7:
-            if birthday_this_year.strftime("%A") in ["Saturday", "Sunday"] and delta_days <= 5:
-                default_dict[birthday_this_year.strftime("Monday")].append(name)
-            else:
-                default_dict[birthday_this_year.strftime("%A")].append(name)
+@input_error
+def add_contact(args, contacts):
+    name, phone = args
+    contacts[name] = phone
+    return "Contact added."
 
-    week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-    default_dict = {day: default_dict[day] for day in week}
 
-    for day in default_dict:
-        if default_dict[day]:
-            print(f"{day}: {', '.join(default_dict[day])}")
+@input_error
+def change_contact(args, contacts):
+    name, phone = args
+    if name in contacts:
+        contacts[name] = phone
+        return "Contact updated."
+    else:
+        return "Contact not found"
+
+
+@input_error
+def show_phone(args, contacts):
+    name = args[0]
+    return contacts[name] if name in contacts else "Contact not found"
+
+
+@input_error
+def show_all(contacts):
+    return "\n".join(f"{value}: {name}" for value, name in contacts.items())
+
+
+def main():
+    contacts = {}
+    print("Welcome to the assistant bot!")
+    while True:
+        user_input = input("Enter a command: ")
+        command, *args = parse_input(user_input)
+
+        if command in ["close", "exit"]:
+            print("Good bye!")
+            break
+        elif command == "hello":
+            print("How can i help you?")
+        elif command == "add":
+            print(add_contact(args, contacts))
+        elif command == "change":
+            print(change_contact(args, contacts))
+        elif command == "phone":
+            print(show_phone(args, contacts))
+        elif command == "all":
+            print(show_all(contacts))
+        else:
+            print("Invalid command.")
 
 
 if __name__ == "__main__":
-    get_birthday_per_week([{"name": "Bill Gates", "birthday": datetime(1955, 11, 21)},
-                           {"name": "Eva Smith", "birthday": datetime(1945, 11, 24)},
-                           {"name": "Steve Jobs", "birthday": datetime(1945, 11, 25)},
-                           {"name": "Adam Smith", "birthday": datetime(1945, 11, 26)}
-
-                           ])
+    main()
